@@ -13,8 +13,8 @@
     3/10/20
 """
 import daiquiri
+import fabric
 from sqlalchemy import create_engine
-from sqlalchemy.sql import delete, select
 
 from prune.config import Config
 
@@ -86,8 +86,18 @@ def _purge_journal_citation(pid: str, dryrun: bool):
         c.execute(sql)
 
 
-def _purge_filesystem(resources: list):
-    pass
+def _purge_filesystem(pid: str, location: str, dryrun: bool, password: str):
+    config = fabric.Config(overrides={'sudo': {'password': password}})
+    with fabric.Connection(Config.HOST, config=config, connect_timeout=15) as c:
+        cmd = f"rm -rf {location}/{pid}"
+        try:
+            logger.info(f'{cmd}')
+            if not dryrun:
+                r = c.sudo(f'{cmd}')
+                if r.ok:
+                    logger.info(r.stdout)
+        except Exception as e:
+            logger.error(e)
 
 
 class Package:
@@ -95,20 +105,19 @@ class Package:
     def __init__(self, pid: str):
         self._pid = pid
         self._resources = _resources(self._pid)
+        if len(self._resources) == 0:
+            raise RuntimeError(f"{pid} not found on {Config.HOST}")
         for resource in self._resources:
             if resource[1] == 'metadata':
                 self._location = resource[2]
                 break
-        self._dryrun = False
 
-    def purge(self):
-        _purge_access_matrix(self._resources, self._dryrun)
-        _purge_resource_registry(self._pid, self._dryrun)
-        _purge_prov_matrix(self._pid, self._dryrun)
-        _purge_journal_citation(self._pid, self._dryrun)
-
-    def dryrun(self):
-        self._dryrun = True
+    def purge(self, dryrun: bool, password: str):
+        _purge_access_matrix(self._resources, dryrun)
+        _purge_resource_registry(self._pid, dryrun)
+        _purge_prov_matrix(self._pid, dryrun)
+        _purge_journal_citation(self._pid, dryrun)
+        _purge_filesystem(self._pid, self._location, dryrun, password)
 
     @property
     def location(self):
