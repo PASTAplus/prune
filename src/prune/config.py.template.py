@@ -16,11 +16,13 @@
 
 class Config():
 
+    HOST = "PASTA_HOST"
+
     # PASTA database connection
-    DB_USER = 'DB_USER'
-    DB_PW = 'SECRET_PASSWORD'
-    DB_HOST = 'PASTA_DB_HOST_AND_PORT'
-    DB_DB = 'pasta'
-    DB_DRIVER = 'postgres+psycopg2'
+    DB_USER = "DB_USER"
+    DB_PW = "SECRET_PASSWORD"
+    DB_HOST = f"{HOST}:PORT"
+    DB_DB = "pasta"
+    DB_DRIVER = "postgres+psycopg2"
 
 
