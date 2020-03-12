@@ -66,9 +66,9 @@ def main(pid: str, file: str, dryrun: bool, doi: bool, password: str):
     for pid in pids:
         try:
             package = Package(pid)
-            logger.info(f"Purging {pid} from {Config.HOST}")
+            logger.info(f"Pruning {pid} from {Config.HOST}")
             package.purge(dryrun, password)
-            logger.info(f"Successfully purged {pid} from {Config.HOST}")
+            logger.info(f"Successfully pruned {pid} from {Config.HOST}")
         except Exception as e:
             logger.error(e)
 
