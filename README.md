@@ -1,2 +1,2 @@
 # prune
-Selectively remove data packages from PASTA+
+Selectively prune (/pro͞on/) data packages from PASTA+
