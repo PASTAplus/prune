@@ -48,9 +48,11 @@ def _purge_access_matrix(resources: list, dryrun: bool):
             f"DELETE FROM datapackagemanager.access_matrix WHERE "
             f"resource_id='{resource_id}'"
         )
-        logger.info(sql)
         if not dryrun:
+            logger.info(sql)
             c.execute(sql)
+        else:
+            logger.info(f"DRYRUN: {sql}")
 
 
 def _purge_resource_registry(pid: str, dryrun: bool):
@@ -59,9 +61,11 @@ def _purge_resource_registry(pid: str, dryrun: bool):
         f"DELETE FROM datapackagemanager.resource_registry WHERE "
         f"package_id='{pid}'"
     )
-    logger.info(sql)
     if not dryrun:
+        logger.info(sql)
         c.execute(sql)
+    else:
+        logger.info(f"DRYRUN: {sql}")
 
 
 def _purge_prov_matrix(pid: str, dryrun: bool):
@@ -70,9 +74,11 @@ def _purge_prov_matrix(pid: str, dryrun: bool):
         f"DELETE FROM datapackagemanager.prov_matrix WHERE "
         f"derived_id='{pid}' OR source_id='{pid}'"
     )
-    logger.info(sql)
     if not dryrun:
+        logger.info(sql)
         c.execute(sql)
+    else:
+        logger.info(f"DRYRUN: {sql}")
 
 
 def _purge_journal_citation(pid: str, dryrun: bool):
@@ -81,9 +87,11 @@ def _purge_journal_citation(pid: str, dryrun: bool):
         f"DELETE FROM datapackagemanager.journal_citation WHERE "
         f"package_id ='{pid}'"
     )
-    logger.info(sql)
     if not dryrun:
+        logger.info(sql)
         c.execute(sql)
+    else:
+        logger.info(f"DRYRUN: {sql}")
 
 
 def _purge_filesystem(pid: str, location: str, dryrun: bool, password: str):
@@ -91,11 +99,13 @@ def _purge_filesystem(pid: str, location: str, dryrun: bool, password: str):
     with fabric.Connection(Config.HOST, config=config, connect_timeout=15) as c:
         cmd = f"rm -rf {location}/{pid}"
         try:
-            logger.info(f'{cmd}')
             if not dryrun:
-                r = c.sudo(f'{cmd}')
+                logger.info(f"{cmd}")
+                r = c.sudo(f"{cmd}")
                 if r.ok:
                     logger.info(r.stdout)
+            else:
+                logger.info(f"DRYRUN: {cmd}")
         except Exception as e:
             logger.error(e)
 
