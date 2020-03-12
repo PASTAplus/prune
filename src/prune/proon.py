@@ -50,6 +50,11 @@ def main(pid: str, file: str, dryrun: bool, doi: bool, password: str):
         \b
             PID: data package identifier (scope.identifier.revision)
     """
+    if doi:
+        msg = "DOI tombstoning not yet implemented"
+        logger.warning(msg)
+        return 1
+
     if pid is None and file is None:
         msg = f"Usage: proon.py [OPTIONS] [PID]\n" \
               f"Try \"proon.py -h\" for help."
