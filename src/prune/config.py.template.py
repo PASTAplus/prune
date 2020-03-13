@@ -16,13 +16,15 @@
 
 class Config():
 
-    HOST = "PASTA_HOST"
-
     # PASTA database connection
     DB_USER = "DB_USER"
     DB_PW = "SECRET_PASSWORD"
-    DB_HOST = f"{HOST}:PORT"
+    DB_PORT = "PORT"
     DB_DB = "pasta"
     DB_DRIVER = "postgres+psycopg2"
 
+    DATACITE_USER = "EDI.EDI"
+    DATACITE_PW = "SECRET_PASSWORD"
+    DATACITE_EP = "https://mds.datacite.org/doi"
+    TOMBSTONE = "https://environmentaldatainitiative.org/data-package-not-available"
 
