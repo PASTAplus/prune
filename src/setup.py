@@ -14,8 +14,8 @@
 import setuptools
 
 setuptools.setup(name='pastaplus.prune',
-                 version='2020.03.11',
-                 description='Selectively remove data packages from PASTA+',
+                 version='2020.03.13',
+                 description='Selectively prune data packages from PASTA+',
                  author='PASTA+ project',
                  url='https://github.com/PASTAplus/prune',
                  license='Apache License, Version 2.0',
