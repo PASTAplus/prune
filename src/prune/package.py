@@ -23,8 +23,19 @@ logger = daiquiri.getLogger(__name__)
 
 
 def _get_db_connection(host: str):
-    db = Config.DB_DRIVER + "://" + Config.DB_USER + ":" + Config.DB_PW + "@" \
-         + host + ":" + Config.DB_PORT + "/" + Config.DB_DB
+    db = (
+        Config.DB_DRIVER
+        + "://"
+        + Config.DB_USER
+        + ":"
+        + Config.DB_PW
+        + "@"
+        + host
+        + ":"
+        + Config.DB_PORT
+        + "/"
+        + Config.DB_DB
+    )
 
     connection = create_engine(db)
     return connection
@@ -90,9 +101,10 @@ def _purge_journal_citation(db_conn, pid: str, dryrun: bool):
         logger.info(f"DRYRUN: {sql}")
 
 
-def _purge_filesystem(host: str, pid: str, location: dict, dryrun: bool,
-                      password: str):
-    config = fabric.Config(overrides={'sudo': {'password': password}})
+def _purge_filesystem(
+    host: str, pid: str, location: dict, dryrun: bool, password: str
+):
+    config = fabric.Config(overrides={"sudo": {"password": password}})
     with fabric.Connection(host, config=config, connect_timeout=15) as c:
         cmd = f"rm -rf {location}/{pid}"
         try:
@@ -108,13 +120,14 @@ def _purge_filesystem(host: str, pid: str, location: dict, dryrun: bool,
 
 
 def _tombstone_doi(doi: str, dryrun: bool):
-    rbody = f"doi={doi}\n" \
-            f"url={Config.TOMBSTONE}\n"
+    rbody = f"doi={doi}\n" f"url={Config.TOMBSTONE}\n"
     if not dryrun:
-        r = requests.post(Config.DATACITE_EP,
-                          auth=(Config.DATACITE_USER, Config.DATACITE_PW),
-                          data=rbody.encode('utf-8'),
-                          headers={'Content-Type': 'text/plain;charset=UTF-8'})
+        r = requests.post(
+            Config.DATACITE_EP,
+            auth=(Config.DATACITE_USER, Config.DATACITE_PW),
+            data=rbody.encode("utf-8"),
+            headers={"Content-Type": "text/plain;charset=UTF-8"},
+        )
         if r.status_code != requests.codes.ok:
             msg = f"Tombstoning {doi} failed: {r.reason}"
             logger.error(msg)
@@ -124,7 +137,6 @@ def _tombstone_doi(doi: str, dryrun: bool):
 
 
 class Package:
-
     def __init__(self, host: str, pid: str, sudo: str, dryrun: bool):
         self._host = host
         self._pid = pid
@@ -136,11 +148,11 @@ class Package:
             raise RuntimeError(f"{self._pid} not found on {self._host}")
         self._locations = dict()
         for resource in self._resources:
-            if resource[1] == 'metadata':
-                self._locations['metadata'] = resource[2]
-            if resource[1] == 'data':
-                self._locations['data'] = resource[2]
-            if resource[1] == 'dataPackage':
+            if resource[1] == "metadata":
+                self._locations["metadata"] = resource[2]
+            if resource[1] == "data":
+                self._locations["data"] = resource[2]
+            if resource[1] == "dataPackage":
                 self._doi = resource[3]
 
     def purge(self):
@@ -150,15 +162,23 @@ class Package:
         _purge_journal_citation(self._db_conn, self._pid, self._dryrun)
 
         # Metadata and data may be stored in different locations
-        _purge_filesystem(self._host, self._pid, self._locations["metadata"],
-                          self._dryrun, self._sudo)
+        _purge_filesystem(
+            self._host,
+            self._pid,
+            self._locations["metadata"],
+            self._dryrun,
+            self._sudo,
+        )
         if self._locations["metadata"] != self._locations["data"]:
-            _purge_filesystem(self._pid, self._locations["metadata"],
-                              self._dryrun, self._sudo)
+            _purge_filesystem(
+                self._pid,
+                self._locations["metadata"],
+                self._dryrun,
+                self._sudo,
+            )
 
     def tombstone_doi(self):
         if self._doi is not None:
             _tombstone_doi(self._doi.replace("doi:", ""), self._dryrun)
         else:
             logger.info(f"DOI for {self._pid} is None")
-

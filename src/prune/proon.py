@@ -23,14 +23,17 @@ from prune.package import Package
 
 cwd = os.path.dirname(os.path.realpath(__file__))
 logfile = cwd + "/prune.log"
-daiquiri.setup(level=logging.INFO, outputs=(daiquiri.output.File(logfile),
-                                            "stdout",))
+daiquiri.setup(
+    level=logging.INFO, outputs=(daiquiri.output.File(logfile), "stdout",)
+)
 logger = daiquiri.getLogger(__name__)
 
 help_dryrun = "Perform dry run only, do not remove any data package"
 help_doi = "Set DOI target to tombstone"
-help_sudo = "SUDO password on target host (if SUDO environment variable " \
-            "is not set) "
+help_sudo = (
+    "SUDO password on target host (if SUDO environment variable "
+    "is not set) "
+)
 help_file = "Text file with pid(s) one per line"
 help_pid = "Package identifier targeted for pruning"
 
@@ -52,8 +55,7 @@ def main(host: str, pid: str, file: str, dryrun: bool, doi: bool, sudo: str):
         HOST: PASTA+ package server targeted for package pruning.
     """
     if pid is None and file is None:
-        msg = f"Usage: proon.py [OPTIONS] [PID]\n" \
-              f"Try 'proon.py -h' for help."
+        msg = f"Usage: proon.py [OPTIONS] [PID]\nTry 'proon.py -h' for help."
         print(msg)
         return 1
     else:

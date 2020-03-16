@@ -14,7 +14,7 @@
 """
 
 
-class Config():
+class Config:
 
     # PASTA database connection
     DB_USER = "DB_USER"
@@ -26,5 +26,6 @@ class Config():
     DATACITE_USER = "EDI.EDI"
     DATACITE_PW = "SECRET_PASSWORD"
     DATACITE_EP = "https://mds.datacite.org/doi"
-    TOMBSTONE = "https://environmentaldatainitiative.org/data-package-not-available"
-
+    TOMBSTONE = (
+        "https://environmentaldatainitiative.org/data-package-not-available"
+    )
