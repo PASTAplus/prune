@@ -37,6 +37,7 @@ setup(
     package_dir={"": "src"},
     python_requires=">3.6.*",
     install_requires=[
+        "click>=7.1.1",
         "daiquiri>=2.1.1",
         "fabric>=2.5.0",
         "requests>=2.23.0",
