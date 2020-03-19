@@ -36,7 +36,12 @@ setup(
     exclude_package_data={"": ["settings.py, properties.py, config.py"],},
     package_dir={"": "src"},
     python_requires=">3.6.*",
-    install_requires=["fabric>=2.5.0", "daiquiri>=2.1.1"],
+    install_requires=[
+        "daiquiri>=2.1.1",
+        "fabric>=2.5.0",
+        "requests>=2.23.0",
+        "sqlalchemy>=1.3.13",
+        ],
     entry_points={"console_scripts": ["prune=prune.proon:main"]},
     classifiers=[
         'License :: OSI Approved :: Apache Software License',
