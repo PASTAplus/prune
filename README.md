@@ -1,7 +1,7 @@
 # prune
 Selectively prune (/pro͞on/) data packages from PASTA+
 
-# Usage:
+# Usage
 ```
 Usage: prune [OPTIONS] HOST
 
@@ -20,7 +20,6 @@ Options:
 ```
 
 # Installation
-
 1. `git@github.com:PASTAplus/prune.git`
 1. `cd prune`
 1. `conda env create --file environment.yml`
