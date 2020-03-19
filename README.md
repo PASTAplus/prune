@@ -2,6 +2,7 @@
 Selectively prune (/pro͞on/) data packages from PASTA+
 
 # Usage:
+```
 Usage: prune [OPTIONS] HOST
 
   Prunes (/pro͞on/) data package(s) from PASTA+ repository.
@@ -16,6 +17,7 @@ Options:
   --sudo TEXT  SUDO password on target host (if SUDO environment variable is
                not set)
   -h, --help   Show this message and exit.
+```
 
 # Installation
 
