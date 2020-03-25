@@ -55,7 +55,7 @@ def main(host: str, pid: str, file: str, dryrun: bool, doi: bool, sudo: str):
         HOST: PASTA+ package server targeted for package pruning.
     """
     if pid is None and file is None:
-        msg = f"Usage: proon.py [OPTIONS] [PID]\nTry 'proon.py -h' for help."
+        msg = f"Usage: prune [OPTIONS] HOST\nTry 'proon.py -h' for help."
         print(msg)
         return 1
     else:
