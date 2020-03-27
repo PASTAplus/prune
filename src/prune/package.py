@@ -120,6 +120,7 @@ def _purge_filesystem(
                     time.sleep(30)
             else:
                 logger.info(f"DRYRUN: {cmd}")
+                break
 
 
 def _tombstone_doi(doi: str, dryrun: bool):
