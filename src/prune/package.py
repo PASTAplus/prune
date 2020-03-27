@@ -12,6 +12,8 @@
 :Created:
     3/10/20
 """
+import time
+
 import daiquiri
 import fabric
 import requests
@@ -105,18 +107,19 @@ def _purge_filesystem(
     host: str, pid: str, location: dict, dryrun: bool, password: str
 ):
     config = fabric.Config(overrides={"sudo": {"password": password}})
-    with fabric.Connection(host, config=config, connect_timeout=15) as c:
-        cmd = f"rm -rf {location}/{pid}"
-        try:
+    for retry in range(0, 3):
+        with fabric.Connection(host, config=config, connect_timeout=60) as c:
+            cmd = f"rm -rf {location}/{pid}"
             if not dryrun:
                 logger.info(f"{cmd}")
                 r = c.sudo(f"{cmd}")
                 if r.ok:
                     logger.info(r.stdout)
+                    break
+                else:
+                    time.sleep(30)
             else:
                 logger.info(f"DRYRUN: {cmd}")
-        except Exception as e:
-            logger.error(e)
 
 
 def _tombstone_doi(doi: str, dryrun: bool):
@@ -156,26 +159,29 @@ class Package:
                 self._doi = resource[3]
 
     def purge(self):
-        _purge_access_matrix(self._db_conn, self._resources, self._dryrun)
-        _purge_resource_registry(self._db_conn, self._pid, self._dryrun)
-        _purge_prov_matrix(self._db_conn, self._pid, self._dryrun)
-        _purge_journal_citation(self._db_conn, self._pid, self._dryrun)
-
-        # Metadata and data may be stored in different locations
-        _purge_filesystem(
-            self._host,
-            self._pid,
-            self._locations["metadata"],
-            self._dryrun,
-            self._sudo,
-        )
-        if self._locations["metadata"] != self._locations["data"]:
+        try:
+            # Metadata and data may be stored in different locations
             _purge_filesystem(
+                self._host,
                 self._pid,
                 self._locations["metadata"],
                 self._dryrun,
                 self._sudo,
             )
+            if self._locations["metadata"] != self._locations["data"]:
+                _purge_filesystem(
+                    self._pid,
+                    self._locations["metadata"],
+                    self._dryrun,
+                    self._sudo,
+                )
+
+            _purge_access_matrix(self._db_conn, self._resources, self._dryrun)
+            _purge_resource_registry(self._db_conn, self._pid, self._dryrun)
+            _purge_prov_matrix(self._db_conn, self._pid, self._dryrun)
+            _purge_journal_citation(self._db_conn, self._pid, self._dryrun)
+        except Exception as e:
+            logger.error(e)
 
     def tombstone_doi(self):
         if self._doi is not None:

@@ -25,7 +25,7 @@ with open(path.join(here, 'LICENSE'), encoding='utf-8') as f:
 
 setup(
     name="pastaplus.prune",
-    version="2020.03.19",
+    version="2020.03.25",
     description="Selectively prune data packages from PASTA+",
     long_description=long_description,
     author="PASTA+ project",
