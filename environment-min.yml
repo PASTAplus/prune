@@ -1,0 +1,12 @@
+name: prune
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - click
+  - psycopg2
+  - sqlalchemy
+  - fabric
+  - requests
+prefix: /home/servilla/anaconda3/envs/prune
