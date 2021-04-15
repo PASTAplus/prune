@@ -3,10 +3,11 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.8
-  - click
-  - psycopg2
-  - sqlalchemy
   - fabric
+  - psycopg2
+  - click
+  - python=3.8
   - requests
+  - sqlalchemy
+  - daiquiri
 prefix: /home/servilla/anaconda3/envs/prune
