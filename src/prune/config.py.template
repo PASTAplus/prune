@@ -21,7 +21,7 @@ class Config:
     DB_PW = "SECRET_PASSWORD"
     DB_PORT = "PORT"
     DB_DB = "pasta"
-    DB_DRIVER = "postgres+psycopg2"
+    DB_DRIVER = "postgresql+psycopg2"
 
     DATACITE_USER = "EDI.EDI"
     DATACITE_PW = "SECRET_PASSWORD"
