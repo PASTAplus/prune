@@ -13,6 +13,7 @@
     3/10/20
 """
 import time
+import urllib.parse
 
 import daiquiri
 import fabric
@@ -30,7 +31,7 @@ def _get_db_connection(host: str):
         + "://"
         + Config.DB_USER
         + ":"
-        + Config.DB_PW
+        + urllib.parse.quote_plus(Config.DB_PW)
         + "@"
         + host
         + ":"
