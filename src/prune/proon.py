@@ -54,6 +54,10 @@ def main(host: str, pid: str, file: str, dryrun: bool, doi: bool, sudo: str):
         \b
         HOST: PASTA+ package server targeted for package pruning.
     """
+
+    if sudo is None:
+        sudo = input("Enter SUDO password for host(s): ")
+
     if pid is None and file is None:
         msg = f"Usage: prune [OPTIONS] HOST\nTry 'proon.py -h' for help."
         print(msg)
