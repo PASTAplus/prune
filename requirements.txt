@@ -11,7 +11,6 @@ greenlet==1.1.2
 idna==3.3
 invoke==1.7.0
 paramiko==2.10.4
-pastaplus.prune==2020.3.25
 pathlib2==2.3.7.post1
 pip==22.0.4
 psycopg2==2.9.3
