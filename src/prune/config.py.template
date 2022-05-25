@@ -27,5 +27,5 @@ class Config:
     DATACITE_PW = "SECRET_PASSWORD"
     DATACITE_EP = "https://mds.datacite.org/doi"
     TOMBSTONE = (
-        "https://environmentaldatainitiative.org/data-package-not-available"
+        "https://edirepository.org/data/tombstone"
     )
