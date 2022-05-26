@@ -29,25 +29,25 @@ daiquiri.setup(
 logger = daiquiri.getLogger(__name__)
 
 help_dryrun = "Perform dry run only, do not remove any data package"
-help_doi = "Set DOI target to tombstone"
+help_doi = "Set DOI target to tombstone (default is True)"
 help_sudo = (
     "SUDO password on target host (if SUDO environment variable "
     "is not set) "
 )
 help_file = "Text file with pid(s) one per line"
-help_pid = "Package identifier targeted for pruning"
+help_pid = "Package identifier targeted for pruning (may repeat for multiple files; cannot be used with --file)."
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("host", required=True)
-@click.option("--pid", default=None, help=help_pid)
+@click.option("--pid", default=None, multiple=True, help=help_pid)
 @click.option("--file", default=None, help=help_file)
 @click.option("--dryrun", default=False, is_flag=True, help=help_dryrun)
-@click.option("--doi", default=False, is_flag=True, help=help_doi)
+@click.option("--doi", default=True, is_flag=True, help=help_doi)
 @click.option("--sudo", default=None, envvar="SUDO", help=help_sudo)
-def main(host: str, pid: str, file: str, dryrun: bool, doi: bool, sudo: str):
+def main(host: str, pid: tuple, file: str, dryrun: bool, doi: bool, sudo: str):
     """
         Prunes (/pro͞on/) data package(s) from PASTA+ repository.
 
@@ -65,7 +65,7 @@ def main(host: str, pid: str, file: str, dryrun: bool, doi: bool, sudo: str):
     else:
         pids = []
         if pid:
-            pids.append(pid)
+            pids = list(pid)
         if file:
             with open(file, "r") as f:
                 pids += [_.strip() for _ in f]
