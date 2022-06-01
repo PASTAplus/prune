@@ -125,17 +125,30 @@ def _purge_filesystem(
 
 
 def _tombstone_doi(doi: str, dryrun: bool):
-    rbody = f"doi={doi}\n" f"url={Config.TOMBSTONE}\n"
+    rbody = f"doi={doi}\n" + f"url={Config.TOMBSTONE}\n"
     if not dryrun:
-        r = requests.post(
-            Config.DATACITE_EP,
+
+        # Update DOI URL to tombstone page
+        r = requests.put(
+            url=Config.DATACITE_EP + f"/{doi}",
             auth=(Config.DATACITE_USER, Config.DATACITE_PW),
             data=rbody.encode("utf-8"),
             headers={"Content-Type": "text/plain;charset=UTF-8"},
         )
-        if r.status_code != requests.codes.ok:
-            msg = f"Tombstoning {doi} failed: {r.reason}"
+        if r.status_code != requests.codes.created:
+            msg = f"Updating the DOI URL for {doi} failed: {r.reason}"
             logger.error(msg)
+
+        # Set DOI metadata status to registered, but not searchable
+        r = requests.delete(
+            url=Config.DATACITE_EP + f"/{doi}",
+            auth=(Config.DATACITE_USER, Config.DATACITE_PW),
+            headers={"Content-Type": "text/plain;charset=UTF-8"},
+        )
+        if r.status_code != requests.codes.no_content:
+            msg = f"Updating the status for {doi} failed: {r.reason}"
+            logger.error(msg)
+
     else:
         msg = f"DRYRUN: tombstoning {doi}"
         logger.info(msg)
