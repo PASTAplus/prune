@@ -19,6 +19,7 @@ import os
 import click
 import daiquiri
 
+from prune.config import Config
 from prune.package import Package
 
 cwd = os.path.dirname(os.path.realpath(__file__))
@@ -35,7 +36,7 @@ help_sudo = (
     "is not set) "
 )
 help_file = "Text file with pid(s) one per line"
-help_pid = "Package identifier targeted for pruning (may repeat for multiple files; cannot be used with --file)."
+help_pid = "Package identifier targeted for pruning (may repeat for multiple files)"
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -45,7 +46,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 @click.option("--pid", default=None, multiple=True, help=help_pid)
 @click.option("--file", default=None, help=help_file)
 @click.option("--dryrun", default=False, is_flag=True, help=help_dryrun)
-@click.option("--doi", default=True, is_flag=True, help=help_doi)
+@click.option("--doi", default=False, is_flag=True, help=help_doi)
 @click.option("--sudo", default=None, envvar="SUDO", help=help_sudo)
 def main(host: str, pid: tuple, file: str, dryrun: bool, doi: bool, sudo: str):
     """
@@ -55,8 +56,17 @@ def main(host: str, pid: tuple, file: str, dryrun: bool, doi: bool, sudo: str):
         HOST: PASTA+ package server targeted for package pruning.
     """
 
+    if not doi and host == Config.PRODUCTION:
+        msg = (
+            "Removing pid(s) from the Production system but not tombstoning DOI(s), "
+            "are you sure you would like to continue (yes/no)?: "
+        )
+        confirm = input(msg)
+        if confirm.lower() == "no":
+            return 1
+
     if sudo is None:
-        sudo = input("Enter SUDO password for host(s): ")
+        sudo = input("Enter SUDO password for host: ")
 
     if pid is None and file is None:
         msg = f"Usage: prune [OPTIONS] HOST\nTry 'proon.py -h' for help."
