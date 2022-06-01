@@ -29,3 +29,7 @@ class Config:
     TOMBSTONE = (
         "https://edirepository.org/data/tombstone"
     )
+
+    PRODUCTION = "package.lternet.edu"
+    STAGING = "package-s.lternet.edu"
+    DEVELOPMENT = "package-d.lternet.edu"
