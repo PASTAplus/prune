@@ -68,6 +68,20 @@ def _purge_access_matrix(db_conn, resources: list, dryrun: bool):
             logger.info(f"DRYRUN: {sql}")
 
 
+def _purge_reservation(db_conn, pid: str, dryrun: bool):
+    scope, identifier, revision = pid.split(".")
+
+    sql = (
+        f"DELETE FROM datapackagemanager.reservation WHERE "
+        f"scope = '{scope}' AND identifier = '{identifier}'"
+    )
+    if not dryrun:
+        logger.info(sql)
+        db_conn.execute(sql)
+    else:
+        logger.info(f"DRYRUN: {sql}")
+
+
 def _purge_resource_registry(db_conn, pid: str, dryrun: bool):
     sql = (
         f"DELETE FROM datapackagemanager.resource_registry WHERE "
@@ -192,6 +206,7 @@ class Package:
                 )
 
             _purge_access_matrix(self._db_conn, self._resources, self._dryrun)
+            _purge_reservation(self._db_conn, self._pid, self._dryrun)
             _purge_resource_registry(self._db_conn, self._pid, self._dryrun)
             _purge_prov_matrix(self._db_conn, self._pid, self._dryrun)
             _purge_journal_citation(self._db_conn, self._pid, self._dryrun)
