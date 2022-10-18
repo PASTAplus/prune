@@ -138,6 +138,31 @@ def _purge_filesystem(
                 break
 
 
+def _purge_solr( host: str, pid: str, dryrun: bool):
+
+    scope, identifier, revision = pid.split(".")
+
+    if "package-d" in host:
+        solr_host = "solr-d"
+    elif "package-s" in host:
+        solr_host = "solr-s"
+    else:
+        solr_host = "solr"
+
+    url = f"http://{solr_host}.lternet.edu:8983/solr/collection1/update?commit=true"
+    headers = {"Content-type": "text/xml"}
+    data = f"<delete><id>{scope}.{identifier}</id></delete>"
+
+    if not dryrun:
+        r = requests.post(url=url, headers=headers, data=data)
+        if r.status_code != requests.codes.ok:
+            logger.error(r.reason)
+        else:
+            logger.info(f"{url} {headers} {data}")
+    else:
+        logger.info(f"{url} {headers} {data}")
+
+
 def _tombstone_doi(doi: str, dryrun: bool):
     rbody = f"doi={doi}\n" + f"url={Config.TOMBSTONE}\n"
     if not dryrun:
@@ -210,6 +235,7 @@ class Package:
             _purge_resource_registry(self._db_conn, self._pid, self._dryrun)
             _purge_prov_matrix(self._db_conn, self._pid, self._dryrun)
             _purge_journal_citation(self._db_conn, self._pid, self._dryrun)
+            _purge_solr(self._host, self._pid, self._dryrun)
         except Exception as e:
             logger.error(e)
 
