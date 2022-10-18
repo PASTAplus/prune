@@ -6,8 +6,9 @@ dependencies:
   - fabric
   - psycopg2
   - click
-  - python=3.8
+  - python=3.10
   - requests
   - sqlalchemy
   - daiquiri
+  - pytest
 prefix: /home/servilla/anaconda3/envs/prune
