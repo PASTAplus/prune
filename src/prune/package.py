@@ -138,7 +138,7 @@ def _purge_filesystem(
                 break
 
 
-def _purge_solr( host: str, pid: str, dryrun: bool):
+def _purge_solr(host: str, pid: str, dryrun: bool):
 
     scope, identifier, revision = pid.split(".")
 
