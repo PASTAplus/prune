@@ -32,4 +32,4 @@ six==1.16.0
 SQLAlchemy==1.4.42
 tomli==2.0.1
 urllib3==1.26.11
-wheel==0.37.1
+wheel==0.38.1
