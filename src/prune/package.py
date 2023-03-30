@@ -163,14 +163,22 @@ def _purge_solr(host: str, pid: str, dryrun: bool):
         logger.info(f"{url} {headers} {data}")
 
 
-def _tombstone_doi(doi: str, pid: str, dryrun: bool):
+def _tombstone_doi(host: str, doi: str, pid: str, dryrun: bool):
+
+    if host == Config.PRODUCTION:
+        datacite_url = Config.DATACITE_EP
+        datacite_user = Config.DATACITE_USER
+    else:
+        datacite_url = Config.DATACITE_TEST_EP
+        datacite_user = Config.DATACITE_TEST_USER
+
     rbody = f"doi={doi}\n" + f"url={Config.TOMBSTONE}?pid={pid}&doi={doi}\n"
     if not dryrun:
 
         # Update DOI URL to tombstone page
         r = requests.put(
-            url=Config.DATACITE_EP + f"/{doi}",
-            auth=(Config.DATACITE_USER, Config.DATACITE_PW),
+            url=datacite_url + f"doi/{doi}",
+            auth=(datacite_user, Config.DATACITE_PW),
             data=rbody.encode("utf-8"),
             headers={"Content-Type": "text/plain;charset=UTF-8"},
         )
@@ -180,11 +188,11 @@ def _tombstone_doi(doi: str, pid: str, dryrun: bool):
 
         # Set DOI metadata status to registered, but not searchable
         r = requests.delete(
-            url=Config.DATACITE_EP + f"/{doi}",
-            auth=(Config.DATACITE_USER, Config.DATACITE_PW),
+            url=datacite_url + f"/metadata/{doi}",
+            auth=(datacite_user, Config.DATACITE_PW),
             headers={"Content-Type": "text/plain;charset=UTF-8"},
         )
-        if r.status_code != requests.codes.no_content:
+        if r.status_code != requests.codes.ok:
             msg = f"Updating the status for {doi} failed: {r.reason}"
             logger.error(msg)
 
@@ -241,6 +249,6 @@ class Package:
 
     def tombstone_doi(self):
         if self._doi is not None:
-            _tombstone_doi(self._doi.replace("doi:", ""), self._pid, self._dryrun)
+            _tombstone_doi(self._host, self._doi.replace("doi:", ""), self._pid, self._dryrun)
         else:
             logger.info(f"DOI for {self._pid} is None")

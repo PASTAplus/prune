@@ -24,8 +24,10 @@ class Config:
     DB_DRIVER = "postgresql+psycopg2"
 
     DATACITE_USER = "EDI.EDI"
+    DATACITE_TEST_USER = "DATACITE.EDI"
     DATACITE_PW = "SECRET_PASSWORD"
-    DATACITE_EP = "https://mds.datacite.org/doi"
+    DATACITE_EP = "https://mds.datacite.org/"
+    DATACITE_TEST_EP = "https://mds.test.datacite.org/"
     TOMBSTONE = (
         "https://edirepository.org/data/tombstone"
     )
