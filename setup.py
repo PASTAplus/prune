@@ -25,7 +25,7 @@ with open(path.join(here, 'LICENSE'), encoding='utf-8') as f:
 
 setup(
     name="pastaplus.prune",
-    version="2022.10.17",
+    version="2023.03.30",
     description="Selectively prune data packages from PASTA+",
     long_description=long_description,
     author="PASTA+ project",
@@ -35,7 +35,7 @@ setup(
     include_package_data=True,
     exclude_package_data={"": ["settings.py, properties.py, config.py"],},
     package_dir={"": "src"},
-    python_requires=">3.10.*",
+    python_requires=">3.10",
     install_requires=[
         "click>=8.1.3",
         "daiquiri>=3.0.0",
