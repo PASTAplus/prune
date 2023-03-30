@@ -22,6 +22,6 @@ Options:
 # Installation
 1. `git clone git@github.com:PASTAplus/prune.git`
 1. `cd prune`
-1. `conda env create --file environment.yml`
+1. `conda env create --file environment-min.yml`
 1. `conda activate prune`
 1. `pip install .` or `pip install --editable .`
