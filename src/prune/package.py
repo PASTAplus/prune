@@ -163,8 +163,8 @@ def _purge_solr(host: str, pid: str, dryrun: bool):
         logger.info(f"{url} {headers} {data}")
 
 
-def _tombstone_doi(doi: str, dryrun: bool):
-    rbody = f"doi={doi}\n" + f"url={Config.TOMBSTONE}\n"
+def _tombstone_doi(doi: str, pid: str, dryrun: bool):
+    rbody = f"doi={doi}\n" + f"url={Config.TOMBSTONE}?pid={pid}&doi={doi}\n"
     if not dryrun:
 
         # Update DOI URL to tombstone page
@@ -189,7 +189,7 @@ def _tombstone_doi(doi: str, dryrun: bool):
             logger.error(msg)
 
     else:
-        msg = f"DRYRUN: tombstoning {doi}"
+        msg = f"DRYRUN: tombstoning {doi}\n{rbody}"
         logger.info(msg)
 
 
@@ -241,6 +241,6 @@ class Package:
 
     def tombstone_doi(self):
         if self._doi is not None:
-            _tombstone_doi(self._doi.replace("doi:", ""), self._dryrun)
+            _tombstone_doi(self._doi.replace("doi:", ""), self._pid, self._dryrun)
         else:
             logger.info(f"DOI for {self._pid} is None")
