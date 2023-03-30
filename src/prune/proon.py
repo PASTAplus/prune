@@ -30,7 +30,7 @@ daiquiri.setup(
 logger = daiquiri.getLogger(__name__)
 
 help_dryrun = "Perform dry run only, do not remove any data package"
-help_doi = "Set DOI target to tombstone (default is True)"
+help_doi = "Set DOI target to tombstone (default is False)"
 help_sudo = (
     "SUDO password on target host (if SUDO environment variable "
     "is not set) "
