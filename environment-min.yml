@@ -8,7 +8,7 @@ dependencies:
   - click
   - python=3.10
   - requests
-  - sqlalchemy
+  - sqlalchemy=1.4.46
   - daiquiri
   - pytest
 prefix: /home/servilla/anaconda3/envs/prune
