@@ -223,7 +223,7 @@ class Package:
     def purge(self):
         try:
             # Metadata and data may be stored in different locations
-            _purge_filesystem(
+            _purge_package(
                 self._host,
                 self._pid,
                 self._locations["metadata"],
@@ -231,7 +231,8 @@ class Package:
                 self._sudo,
             )
             if self._locations["metadata"] != self._locations["data"]:
-                _purge_filesystem(
+                _purge_package(
+                    self._host,
                     self._pid,
                     self._locations["metadata"],
                     self._dryrun,
