@@ -118,9 +118,7 @@ def _purge_journal_citation(db_conn, pid: str, dryrun: bool):
         logger.info(f"DRYRUN: {sql}")
 
 
-def _purge_filesystem(
-    host: str, pid: str, location: dict, dryrun: bool, password: str
-):
+def _purge_package(host: str, pid: str, location: dict, dryrun: bool, password: str):
     config = fabric.Config(overrides={"sudo": {"password": password}})
     for retry in range(0, 3):
         with fabric.Connection(host, config=config, connect_timeout=60) as c:
