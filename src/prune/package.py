@@ -118,14 +118,74 @@ def _purge_journal_citation(db_conn, pid: str, dryrun: bool):
         logger.info(f"DRYRUN: {sql}")
 
 
-def _purge_package(host: str, pid: str, location: dict, dryrun: bool, password: str):
+def _purge_cite(host: str, pid: str, dryrun: bool, password: str):
+    if host == Config.PRODUCTION:
+        host = "cite.edirepository.org"
+        location = "/home/pasta/cite/cache/production"
+    elif host == Config.STAGING:
+        host = "cite.edirepository.org"
+        location = "/home/pasta/cite/cache/staging"
+    else:
+        host = "cite-d.edirepository.org"
+        location = "/home/pasta/cite/cache/development"
+
+    resource_path = f"{location}/{pid}.json"
+    _remove_resource(host, resource_path, dryrun, password)
+
+
+def _purge_ridare(host: str, pid: str, dryrun: bool, password: str):
+    if host == Config.PRODUCTION:
+        host = "ridare.edirepository.org"
+        location = "/home/pasta/ridare/cache/prod"
+    elif host == Config.STAGING:
+        host = "ridare.edirepository.org"
+        location = "/home/pasta/ridare/cache/stage"
+    else:
+        host = "ridare-d.edirepository.org"
+        location = "/home/pasta/ridare/cache/dev"
+
+    # Must find all ridare artifacts for the given pid before removing
+    pid = pid.replace(".", "_").replace("-", "_")
     config = fabric.Config(overrides={"sudo": {"password": password}})
     for retry in range(0, 3):
         with fabric.Connection(host, config=config, connect_timeout=60) as c:
-            cmd = f"rm -rf {location}/{pid}"
+            cmd = f"ls {location}"
+            logger.info(f"{cmd}")
+            r = c.sudo(f"{cmd}", hide="stdout")
+            if r.ok:
+                files = r.stdout.split("\n")
+                for f in files:
+                    if pid in f:
+                        resource_path = f"{location}/{f}"
+                        _remove_resource(host, resource_path, dryrun, password)
+                break
+            else:
+                time.sleep(30)
+
+
+def _purge_seo(host: str, pid: str, dryrun: bool, password: str):
+    if host == Config.PRODUCTION:
+        host = "seo.edirepository.org"
+        location = "/home/pasta/seo/cache/production"
+    elif host == Config.STAGING:
+        host = "seo.edirepository.org"
+        location = "/home/pasta/seo/cache/staging"
+    else:
+        host = "seo-d.edirepository.org"
+        location = "/home/pasta/seo/cache/development"
+
+    resource_path = f"{location}/{pid}.json"
+    _remove_resource(host, resource_path, dryrun, password)
+
+
+def _remove_resource(host: str, resource_path: str, dryrun: bool, password: str):
+    config = fabric.Config(overrides={"sudo": {"password": password}})
+    for retry in range(0, 3):
+        with fabric.Connection(host, config=config, connect_timeout=60) as c:
+            cmd = f"rm -rf {resource_path}"
             if not dryrun:
-                logger.info(f"{cmd}")
-                r = c.sudo(f"{cmd}")
+                logger.info(f"{host}: {cmd}")
+                r = c.sudo(f"{cmd}", hide="stdout")
                 if r.ok:
                     logger.info(r.stdout)
                     break
@@ -137,9 +197,7 @@ def _purge_package(host: str, pid: str, location: dict, dryrun: bool, password: 
 
 
 def _purge_solr(host: str, pid: str, dryrun: bool):
-
     scope, identifier, revision = pid.split(".")
-
     if "package-d" in host:
         solr_host = "solr-d"
     elif "package-s" in host:
@@ -220,22 +278,12 @@ class Package:
 
     def purge(self):
         try:
-            # Metadata and data may be stored in different locations
-            _purge_package(
-                self._host,
-                self._pid,
-                self._locations["metadata"],
-                self._dryrun,
-                self._sudo,
-            )
+            # Purge package resource directories
+            resource_path = f"{self._locations['metadata']}/{self._pid}"
+            _remove_resource(self._host, resource_path, self._dryrun, self._sudo)
             if self._locations["metadata"] != self._locations["data"]:
-                _purge_package(
-                    self._host,
-                    self._pid,
-                    self._locations["metadata"],
-                    self._dryrun,
-                    self._sudo,
-                )
+                resource_path = f"{self._locations['data']}/{self._pid}"
+                _remove_resource(self._host, resource_path, self._dryrun, self._sudo)
 
             _purge_access_matrix(self._db_conn, self._resources, self._dryrun)
             _purge_reservation(self._db_conn, self._pid, self._dryrun)
@@ -243,6 +291,9 @@ class Package:
             _purge_prov_matrix(self._db_conn, self._pid, self._dryrun)
             _purge_journal_citation(self._db_conn, self._pid, self._dryrun)
             _purge_solr(self._host, self._pid, self._dryrun)
+            _purge_cite(self._host, self._pid, self._dryrun, self._sudo)
+            _purge_seo(self._host, self._pid, self._dryrun, self._sudo)
+            _purge_ridare(self._host, self._pid, self._dryrun, self._sudo)
         except Exception as e:
             logger.error(e)
 
