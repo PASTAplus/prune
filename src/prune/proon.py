@@ -18,6 +18,7 @@ import os
 
 import click
 import daiquiri
+import requests
 
 from prune.config import Config
 from prune.package import Package
@@ -29,14 +30,32 @@ daiquiri.setup(
 )
 logger = daiquiri.getLogger(__name__)
 
+
+def get_revisions(host: str, pid: str) -> list:
+    scope, identifier = pid.split(".")
+    if host == Config.PRODUCTION:
+        url = f"https://pasta.lternet.edu/package/eml/{scope}/{identifier}"
+    elif host == Config.STAGING:
+        url = f"https://pasta-s.lternet.edu/package/eml/{scope}/{identifier}"
+    else:
+        url = f"https://pasta-d.lternet.edu/package/eml/{scope}/{identifier}"
+
+    r = requests.get(url=url)
+    r.raise_for_status()
+    revisions = r.text.split("\n")
+    return revisions
+
 help_dryrun = "Perform dry run only, do not remove any data package"
 help_doi = "Set DOI target to tombstone (default is False)"
 help_sudo = (
     "SUDO password on target host (if SUDO environment variable "
     "is not set) "
 )
-help_file = "Text file with pid(s) one per line"
-help_pid = "Package identifier targeted for pruning (may repeat for multiple files)"
+help_file = "Text file with pid(s) one per line; other options apply to each pid"
+help_pid = """Package identifier targeted for pruning (may repeat for multiple data packages).
+    Package identifiers with only a scope and accession identifier (e.g., edi.1) will have all
+    versions of the data package pruned and the data package identifier will be locked by
+    retaining the data package entry in the resource registry and setting the deactivated date."""
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -82,12 +101,24 @@ def main(host: str, pid: tuple, file: str, dryrun: bool, doi: bool, sudo: str):
 
     for pid in pids:
         try:
-            package = Package(host, pid, sudo, dryrun)
-            logger.info(f"Pruning {pid} from {host}")
-            package.purge()
-            if doi:
-                package.tombstone_doi()
-            logger.info(f"Successfully pruned {pid} from {host}")
+            if len(pid.split(".")) == 2:  # Prune entire series and lock pid
+                revisions = get_revisions(host, pid)
+                for revision in revisions:
+                    package = Package(host, f"{pid}.{revision}", True, sudo, dryrun)
+                    logger.info(f"Pruning {pid}.{revision} from {host}")
+                    package.prune()
+                    if doi:
+                        package.tombstone_doi()
+                    logger.info(f"Successfully pruned {pid}.{revision} from {host}")
+            elif len(pid.split(".")) == 3:  # Prune single revision
+                package = Package(host, pid, False, sudo, dryrun)
+                logger.info(f"Pruning {pid} from {host}")
+                package.prune()
+                if doi:
+                    package.tombstone_doi()
+                logger.info(f"Successfully pruned {pid} from {host}")
+            else:
+                logger.error(f"Invalid pid: {pid}")
         except Exception as e:
             logger.error(e)
 

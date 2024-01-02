@@ -82,11 +82,17 @@ def _purge_reservation(db_conn, pid: str, dryrun: bool):
         logger.info(f"DRYRUN: {sql}")
 
 
-def _purge_resource_registry(db_conn, pid: str, dryrun: bool):
-    sql = (
-        f"DELETE FROM datapackagemanager.resource_registry WHERE "
-        f"package_id='{pid}'"
-    )
+def _purge_resource_registry(db_conn, pid: str, lock: bool, dryrun: bool):
+    if lock:
+        sql = (
+            f"UPDATE datapackagemanager.resource_registry SET "
+            f"date_deactivated = now() WHERE package_id='{pid}'"
+        )
+    else:
+        sql = (
+            f"DELETE FROM datapackagemanager.resource_registry WHERE "
+            f"package_id='{pid}'"
+        )
     if not dryrun:
         logger.info(sql)
         db_conn.execute(sql)
@@ -258,9 +264,10 @@ def _tombstone_doi(host: str, doi: str, pid: str, dryrun: bool):
 
 
 class Package:
-    def __init__(self, host: str, pid: str, sudo: str, dryrun: bool):
+    def __init__(self, host: str, pid: str, lock: bool, sudo: str, dryrun: bool):
         self._host = host
         self._pid = pid
+        self._lock = lock
         self._sudo = sudo
         self._dryrun = dryrun
         self._db_conn = _get_db_connection(self._host)
@@ -276,7 +283,7 @@ class Package:
             if resource[1] == "dataPackage":
                 self._doi = resource[3]
 
-    def purge(self):
+    def prune(self):
         try:
             # Purge package resource directories
             resource_path = f"{self._locations['metadata']}/{self._pid}"
@@ -287,7 +294,7 @@ class Package:
 
             _purge_access_matrix(self._db_conn, self._resources, self._dryrun)
             _purge_reservation(self._db_conn, self._pid, self._dryrun)
-            _purge_resource_registry(self._db_conn, self._pid, self._dryrun)
+            _purge_resource_registry(self._db_conn, self._pid, self._lock, self._dryrun)
             _purge_prov_matrix(self._db_conn, self._pid, self._dryrun)
             _purge_journal_citation(self._db_conn, self._pid, self._dryrun)
             _purge_solr(self._host, self._pid, self._dryrun)
