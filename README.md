@@ -11,8 +11,13 @@ Usage: prune [OPTIONS] HOST
 
 Options:
   --pid TEXT   Package identifier targeted for pruning (may repeat for
-               multiple files)
-  --file TEXT  Text file with pid(s) one per line
+               multiple data packages). Package identifiers with only a scope
+               and accession identifier (e.g., edi.1) will have all versions
+               of the data package pruned and the data package identifier will
+               be locked by retaining the data package entry in the resource
+               registry and setting the deactivated date.
+  --file TEXT  Text file with pid(s) one per line; other options apply to each
+               pid
   --dryrun     Perform dry run only, do not remove any data package
   --doi        Set DOI target to tombstone (default is False)
   --sudo TEXT  SUDO password on target host (if SUDO environment variable is

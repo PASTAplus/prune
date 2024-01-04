@@ -124,11 +124,11 @@ def _purge_journal_citation(db_conn, pid: str, dryrun: bool):
         logger.info(f"DRYRUN: {sql}")
 
 
-def _purge_cite(host: str, pid: str, dryrun: bool, password: str):
-    if host == Config.PRODUCTION:
+def _purge_cite(tier: str, pid: str, dryrun: bool, password: str):
+    if tier in Config.PRODUCTION:
         host = "cite.edirepository.org"
         location = "/home/pasta/cite/cache/production"
-    elif host == Config.STAGING:
+    elif tier in Config.STAGING:
         host = "cite.edirepository.org"
         location = "/home/pasta/cite/cache/staging"
     else:
@@ -139,11 +139,11 @@ def _purge_cite(host: str, pid: str, dryrun: bool, password: str):
     _remove_resource(host, resource_path, dryrun, password)
 
 
-def _purge_ridare(host: str, pid: str, dryrun: bool, password: str):
-    if host == Config.PRODUCTION:
+def _purge_ridare(tier: str, pid: str, dryrun: bool, password: str):
+    if tier in Config.PRODUCTION:
         host = "ridare.edirepository.org"
         location = "/home/pasta/ridare/cache/prod"
-    elif host == Config.STAGING:
+    elif tier in Config.STAGING:
         host = "ridare.edirepository.org"
         location = "/home/pasta/ridare/cache/stage"
     else:
@@ -169,11 +169,11 @@ def _purge_ridare(host: str, pid: str, dryrun: bool, password: str):
                 time.sleep(30)
 
 
-def _purge_seo(host: str, pid: str, dryrun: bool, password: str):
-    if host == Config.PRODUCTION:
+def _purge_seo(tier: str, pid: str, dryrun: bool, password: str):
+    if tier in Config.PRODUCTION:
         host = "seo.edirepository.org"
         location = "/home/pasta/seo/cache/production"
-    elif host == Config.STAGING:
+    elif tier in Config.STAGING:
         host = "seo.edirepository.org"
         location = "/home/pasta/seo/cache/staging"
     else:
@@ -202,16 +202,16 @@ def _remove_resource(host: str, resource_path: str, dryrun: bool, password: str)
                 break
 
 
-def _purge_solr(host: str, pid: str, dryrun: bool):
+def _purge_solr(tier: str, pid: str, dryrun: bool):
     scope, identifier, revision = pid.split(".")
-    if "package-d" in host:
-        solr_host = "solr-d"
-    elif "package-s" in host:
-        solr_host = "solr-s"
+    if tier in Config.PRODUCTION:
+        solr_host = "solr.lternet.edu"
+    elif tier in Config.STAGING:
+        solr_host = "solr-s.lternet.edu"
     else:
-        solr_host = "solr"
+        solr_host = "solr-d.lternet.edu"
 
-    url = f"http://{solr_host}.lternet.edu:8983/solr/collection1/update?commit=true"
+    url = f"http://{solr_host}:8983/solr/collection1/update?commit=true"
     headers = {"Content-type": "text/xml"}
     data = f"<delete><id>{scope}.{identifier}</id></delete>"
 
@@ -264,8 +264,16 @@ def _tombstone_doi(host: str, doi: str, pid: str, dryrun: bool):
 
 
 class Package:
-    def __init__(self, host: str, pid: str, lock: bool, sudo: str, dryrun: bool):
-        self._host = host
+    def __init__(self, tier: str, pid: str, lock: bool, sudo: str, dryrun: bool):
+
+        if tier in Config.PRODUCTION:
+            self._host = "package.lternet.edu"
+        elif tier in Config.STAGING:
+            self._host = "package-s.lternet.edu"
+        else:
+            self._host = "package-d.lternet.edu"
+
+        self._tier = tier
         self._pid = pid
         self._lock = lock
         self._sudo = sudo
@@ -273,7 +281,7 @@ class Package:
         self._db_conn = _get_db_connection(self._host)
         self._resources = _resources(self._db_conn, self._pid)
         if len(self._resources) == 0:
-            raise RuntimeError(f"{self._pid} not found on {self._host}")
+            raise RuntimeError(f"{self._pid} not found on {self._tier}")
         self._locations = dict()
         for resource in self._resources:
             if resource[1] == "metadata":
@@ -297,7 +305,7 @@ class Package:
             _purge_resource_registry(self._db_conn, self._pid, self._lock, self._dryrun)
             _purge_prov_matrix(self._db_conn, self._pid, self._dryrun)
             _purge_journal_citation(self._db_conn, self._pid, self._dryrun)
-            _purge_solr(self._host, self._pid, self._dryrun)
+            _purge_solr(self._tier, self._pid, self._dryrun)
             _purge_cite(self._host, self._pid, self._dryrun, self._sudo)
             _purge_seo(self._host, self._pid, self._dryrun, self._sudo)
             _purge_ridare(self._host, self._pid, self._dryrun, self._sudo)

@@ -32,6 +32,6 @@ class Config:
         "https://edirepository.org/data/tombstone"
     )
 
-    PRODUCTION = "package.lternet.edu"
-    STAGING = "package-s.lternet.edu"
-    DEVELOPMENT = "package-d.lternet.edu"
+    PRODUCTION = ["prod", "production"]
+    STAGING = ["stage", "staging"]
+    DEVELOPMENT = ["dev", "development"]

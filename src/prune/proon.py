@@ -48,7 +48,7 @@ def get_revisions(host: str, pid: str) -> list:
 help_dryrun = "Perform dry run only, do not remove any data package"
 help_doi = "Set DOI target to tombstone (default is False)"
 help_sudo = (
-    "SUDO password on target host (if SUDO environment variable "
+    "SUDO password for tier (if SUDO environment variable "
     "is not set) "
 )
 help_file = "Text file with pid(s) one per line; other options apply to each pid"
@@ -61,21 +61,21 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 @click.command(context_settings=CONTEXT_SETTINGS)
-@click.argument("host", required=True)
+@click.argument("tier", required=True)
 @click.option("--pid", default=None, multiple=True, help=help_pid)
 @click.option("--file", default=None, help=help_file)
 @click.option("--dryrun", default=False, is_flag=True, help=help_dryrun)
 @click.option("--doi", default=False, is_flag=True, help=help_doi)
 @click.option("--sudo", default=None, envvar="SUDO", help=help_sudo)
-def main(host: str, pid: tuple, file: str, dryrun: bool, doi: bool, sudo: str):
+def main(tier: str, pid: tuple, file: str, dryrun: bool, doi: bool, sudo: str):
     """
-        Prunes (/pro͞on/) data package(s) from PASTA+ repository.
+        Prunes (/pro͞on/) data package(s) from PASTA repository.
 
         \b
-        HOST: PASTA+ package server targeted for package pruning.
+        TIER: PASTA system tier targeted for package pruning.
     """
 
-    if not doi and host == Config.PRODUCTION:
+    if not doi and tier in Config.PRODUCTION:
         msg = (
             "Removing pid(s) from the Production system but not tombstoning DOI(s), "
             "are you sure you would like to continue (yes/no)?: "
@@ -102,21 +102,21 @@ def main(host: str, pid: tuple, file: str, dryrun: bool, doi: bool, sudo: str):
     for pid in pids:
         try:
             if len(pid.split(".")) == 2:  # Prune entire series and lock pid
-                revisions = get_revisions(host, pid)
+                revisions = get_revisions(tier, pid)
                 for revision in revisions:
-                    package = Package(host, f"{pid}.{revision}", True, sudo, dryrun)
-                    logger.info(f"Pruning {pid}.{revision} from {host}")
+                    package = Package(tier, f"{pid}.{revision}", True, sudo, dryrun)
+                    logger.info(f"Pruning {pid}.{revision} from {tier}")
                     package.prune()
                     if doi:
                         package.tombstone_doi()
-                    logger.info(f"Successfully pruned {pid}.{revision} from {host}")
+                    logger.info(f"Successfully pruned {pid}.{revision} from {tier}")
             elif len(pid.split(".")) == 3:  # Prune single revision
-                package = Package(host, pid, False, sudo, dryrun)
-                logger.info(f"Pruning {pid} from {host}")
+                package = Package(tier, pid, False, sudo, dryrun)
+                logger.info(f"Pruning {pid} from {tier}")
                 package.prune()
                 if doi:
                     package.tombstone_doi()
-                logger.info(f"Successfully pruned {pid} from {host}")
+                logger.info(f"Successfully pruned {pid} from {tier}")
             else:
                 logger.error(f"Invalid pid: {pid}")
         except Exception as e:
