@@ -28,9 +28,7 @@ class Config:
     DATACITE_PW = "SECRET_PASSWORD"
     DATACITE_EP = "https://mds.datacite.org/"
     DATACITE_TEST_EP = "https://mds.test.datacite.org/"
-    TOMBSTONE = (
-        "https://edirepository.org/data/tombstone"
-    )
+    TOMBSTONE = "https://edirepository.org/data/tombstone"
 
     PRODUCTION = ["prod", "production"]
     STAGING = ["stage", "staging"]

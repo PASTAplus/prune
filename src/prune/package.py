@@ -55,34 +55,50 @@ def _resources(db_conn, pid: str) -> list:
 
 
 def _purge_access_matrix(db_conn, resources: list, dryrun: bool):
+    msg = "Purging access matrix:"
+    logger.info(msg)
+    print(msg)
+
     for resource in resources:
         resource_id = resource[0]
         sql = (
             f"DELETE FROM datapackagemanager.access_matrix WHERE "
             f"resource_id='{resource_id}'"
         )
+
+        msg = f"  {sql}"
+        logger.info(msg)
+        print(msg)
+
         if not dryrun:
-            logger.info(sql)
             db_conn.execute(sql)
-        else:
-            logger.info(f"DRYRUN: {sql}")
 
 
 def _purge_reservation(db_conn, pid: str, dryrun: bool):
+    msg = "Purging reservation:"
+    logger.info(msg)
+    print(msg)
+
     scope, identifier, revision = pid.split(".")
 
     sql = (
         f"DELETE FROM datapackagemanager.reservation WHERE "
         f"scope = '{scope}' AND identifier = '{identifier}'"
     )
+
+    msg = f"  {sql}"
+    logger.info(msg)
+    print(msg)
+
     if not dryrun:
-        logger.info(sql)
         db_conn.execute(sql)
-    else:
-        logger.info(f"DRYRUN: {sql}")
 
 
 def _purge_resource_registry(db_conn, pid: str, lock: bool, dryrun: bool):
+    msg = "Purging resource registry:"
+    logger.info(msg)
+    print(msg)
+
     if lock:
         sql = (
             f"UPDATE datapackagemanager.resource_registry SET "
@@ -93,38 +109,56 @@ def _purge_resource_registry(db_conn, pid: str, lock: bool, dryrun: bool):
             f"DELETE FROM datapackagemanager.resource_registry WHERE "
             f"package_id='{pid}'"
         )
+
+    msg = f"  {sql}"
+    logger.info(msg)
+    print(msg)
+
     if not dryrun:
-        logger.info(sql)
         db_conn.execute(sql)
-    else:
-        logger.info(f"DRYRUN: {sql}")
 
 
 def _purge_prov_matrix(db_conn, pid: str, dryrun: bool):
+    msg = "Purging provenance matrix:"
+    logger.info(msg)
+    print(msg)
+
     sql = (
         f"DELETE FROM datapackagemanager.prov_matrix WHERE "
         f"derived_id='{pid}' OR source_id='{pid}'"
     )
+
+    msg = f"  {sql}"
+    logger.info(msg)
+    print(msg)
+
     if not dryrun:
-        logger.info(sql)
         db_conn.execute(sql)
-    else:
-        logger.info(f"DRYRUN: {sql}")
 
 
 def _purge_journal_citation(db_conn, pid: str, dryrun: bool):
+    msg = "Purging journal citation:"
+    logger.info(msg)
+    print(msg)
+
     sql = (
         f"DELETE FROM datapackagemanager.journal_citation WHERE "
         f"package_id ='{pid}'"
     )
+
+    msg = f"  {sql}"
+    logger.info(msg)
+    print(msg)
+
     if not dryrun:
-        logger.info(sql)
         db_conn.execute(sql)
-    else:
-        logger.info(f"DRYRUN: {sql}")
 
 
 def _purge_cite(tier: str, pid: str, dryrun: bool, password: str):
+    msg = "Purging cite:"
+    logger.info(msg)
+    print(msg)
+
     if tier in Config.PRODUCTION:
         host = "cite.edirepository.org"
         location = "/home/pasta/cite/cache/production"
@@ -140,6 +174,10 @@ def _purge_cite(tier: str, pid: str, dryrun: bool, password: str):
 
 
 def _purge_ridare(tier: str, pid: str, dryrun: bool, password: str):
+    msg = "Purging ridare:"
+    logger.info(msg)
+    print(msg)
+
     if tier in Config.PRODUCTION:
         host = "ridare.edirepository.org"
         location = "/home/pasta/ridare/cache/prod"
@@ -156,8 +194,8 @@ def _purge_ridare(tier: str, pid: str, dryrun: bool, password: str):
     for retry in range(0, 3):
         with fabric.Connection(host, config=config, connect_timeout=60) as c:
             cmd = f"ls {location}"
-            logger.info(f"{cmd}")
             r = c.sudo(f"{cmd}", hide="stdout")
+            print("\n")
             if r.ok:
                 files = r.stdout.split("\n")
                 for f in files:
@@ -170,6 +208,10 @@ def _purge_ridare(tier: str, pid: str, dryrun: bool, password: str):
 
 
 def _purge_seo(tier: str, pid: str, dryrun: bool, password: str):
+    msg = "Purging seo:"
+    logger.info(msg)
+    print(msg)
+
     if tier in Config.PRODUCTION:
         host = "seo.edirepository.org"
         location = "/home/pasta/seo/cache/production"
@@ -185,24 +227,32 @@ def _purge_seo(tier: str, pid: str, dryrun: bool, password: str):
 
 
 def _remove_resource(host: str, resource_path: str, dryrun: bool, password: str):
+
+    cmd = f"rm -rf {resource_path}"
+    msg = f"  {host}: {cmd}"
+    logger.info(msg)
+    print(msg)
+
     config = fabric.Config(overrides={"sudo": {"password": password}})
     for retry in range(0, 3):
         with fabric.Connection(host, config=config, connect_timeout=60) as c:
-            cmd = f"rm -rf {resource_path}"
+
             if not dryrun:
-                logger.info(f"{host}: {cmd}")
                 r = c.sudo(f"{cmd}", hide="stdout")
+                print("\n")
                 if r.ok:
                     logger.info(r.stdout)
+                    print(r.stdout)
                     break
                 else:
                     time.sleep(30)
-            else:
-                logger.info(f"DRYRUN: {cmd}")
-                break
 
 
 def _purge_solr(tier: str, pid: str, dryrun: bool):
+    msg = "Purging solr:"
+    logger.info(msg)
+    print(msg)
+
     scope, identifier, revision = pid.split(".")
     if tier in Config.PRODUCTION:
         solr_host = "solr.lternet.edu"
@@ -215,19 +265,52 @@ def _purge_solr(tier: str, pid: str, dryrun: bool):
     headers = {"Content-type": "text/xml"}
     data = f"<delete><id>{scope}.{identifier}</id></delete>"
 
+    msg = f"  {url} {headers} {data}"
+    logger.info(msg)
+    print(msg)
+
     if not dryrun:
         r = requests.post(url=url, headers=headers, data=data)
         if r.status_code != requests.codes.ok:
             logger.error(r.reason)
-        else:
-            logger.info(f"{url} {headers} {data}")
+            print(r.reason)
+
+
+def _purge_dex(tier: str, pid: str, dryrun: bool):
+    msg = f"Purging DEX:"
+    logger.info(msg)
+    print(msg)
+
+    scope, identifier, revision = pid.split(".")
+    if tier in Config.PRODUCTION:
+        url = f"https://dex.lternet.edu/https://pasta.lternet.edu/{scope}/{identifier}/{revision}"
+    elif tier in Config.STAGING:
+        url = f"https://dex-d.lternet.edu/https://pasta-s.lternet.edu/{scope}/{identifier}/{revision}"
     else:
-        logger.info(f"{url} {headers} {data}")
+        url = f"https://dex-d.lternet.edu/https://pasta-d.lternet.edu/{scope}/{identifier}/{revision}"
+
+    msg = f"  {url}"
+    logger.info(msg)
+    print(msg)
+
+    if not dryrun:
+        r = requests.delete(url=url)
+        if r.status_code == requests.codes.not_found:
+            msg = f"  Purging DEX failed: {url} not found"
+            logger.info(msg)
+            print(msg)
+        elif r.status_code != requests.codes.ok:
+            msg = f"  Purging DEX failed: {url} {r.reason}"
+            logger.error(msg)
+            print(msg)
 
 
-def _tombstone_doi(host: str, doi: str, pid: str, dryrun: bool):
+def _tombstone_doi(tier: str, doi: str, pid: str, dryrun: bool):
+    msg = f"Tombstoning DOI:"
+    logger.info(msg)
+    print(msg)
 
-    if host == Config.PRODUCTION:
+    if tier in Config.PRODUCTION:
         datacite_url = Config.DATACITE_EP
         datacite_user = Config.DATACITE_USER
     else:
@@ -235,8 +318,12 @@ def _tombstone_doi(host: str, doi: str, pid: str, dryrun: bool):
         datacite_user = Config.DATACITE_TEST_USER
 
     rbody = f"doi={doi}\n" + f"url={Config.TOMBSTONE}?pid={pid}&doi={doi}\n"
-    if not dryrun:
 
+    msg = f"  {doi}\n  {Config.TOMBSTONE}?pid={pid}&doi={doi}"
+    logger.info(msg)
+    print(msg)
+
+    if not dryrun:
         # Update DOI URL to tombstone page
         r = requests.put(
             url=datacite_url + f"doi/{doi}",
@@ -245,8 +332,9 @@ def _tombstone_doi(host: str, doi: str, pid: str, dryrun: bool):
             headers={"Content-Type": "text/plain;charset=UTF-8"},
         )
         if r.status_code != requests.codes.created:
-            msg = f"Updating the DOI URL for {doi} failed: {r.reason}"
+            msg = f"  Updating the DOI URL for {doi} failed: {r.reason}"
             logger.error(msg)
+            print(msg)
 
         # Set DOI metadata status to registered, but not searchable
         r = requests.delete(
@@ -255,12 +343,9 @@ def _tombstone_doi(host: str, doi: str, pid: str, dryrun: bool):
             headers={"Content-Type": "text/plain;charset=UTF-8"},
         )
         if r.status_code != requests.codes.ok:
-            msg = f"Updating the status for {doi} failed: {r.reason}"
+            msg = f"  Updating the status for {doi} failed: {r.reason}"
             logger.error(msg)
-
-    else:
-        msg = f"DRYRUN: tombstoning {doi}\n{rbody}"
-        logger.info(msg)
+            print(msg)
 
 
 class Package:
@@ -306,14 +391,11 @@ class Package:
             _purge_prov_matrix(self._db_conn, self._pid, self._dryrun)
             _purge_journal_citation(self._db_conn, self._pid, self._dryrun)
             _purge_solr(self._tier, self._pid, self._dryrun)
-            _purge_cite(self._host, self._pid, self._dryrun, self._sudo)
-            _purge_seo(self._host, self._pid, self._dryrun, self._sudo)
-            _purge_ridare(self._host, self._pid, self._dryrun, self._sudo)
+            _purge_cite(self._tier, self._pid, self._dryrun, self._sudo)
+            _purge_seo(self._tier, self._pid, self._dryrun, self._sudo)
+            _purge_ridare(self._tier, self._pid, self._dryrun, self._sudo)
+            if self._doi is not None:
+                _tombstone_doi(self._tier, self._doi.replace("doi:", ""), self._pid, self._dryrun)
         except Exception as e:
             logger.error(e)
-
-    def tombstone_doi(self):
-        if self._doi is not None:
-            _tombstone_doi(self._host, self._doi.replace("doi:", ""), self._pid, self._dryrun)
-        else:
-            logger.info(f"DOI for {self._pid} is None")
+            print(e)

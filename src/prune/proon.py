@@ -15,6 +15,7 @@
 """
 import logging
 import os
+import sys
 
 import click
 import daiquiri
@@ -26,16 +27,21 @@ from prune.package import Package
 cwd = os.path.dirname(os.path.realpath(__file__))
 logfile = cwd + "/prune.log"
 daiquiri.setup(
-    level=logging.INFO, outputs=(daiquiri.output.File(logfile), "stdout",)
+    level=logging.INFO,
+    outputs=(
+        daiquiri.output.File(logfile, level=logging.INFO),
+        # daiquiri.output.Stream(sys.stderr, level=logging.ERROR),
+    )
 )
+
 logger = daiquiri.getLogger(__name__)
 
 
-def get_revisions(host: str, pid: str) -> list:
+def get_revisions(tier: str, pid: str) -> list:
     scope, identifier = pid.split(".")
-    if host == Config.PRODUCTION:
+    if tier in Config.PRODUCTION:
         url = f"https://pasta.lternet.edu/package/eml/{scope}/{identifier}"
-    elif host == Config.STAGING:
+    elif tier in Config.STAGING:
         url = f"https://pasta-s.lternet.edu/package/eml/{scope}/{identifier}"
     else:
         url = f"https://pasta-d.lternet.edu/package/eml/{scope}/{identifier}"
@@ -45,8 +51,8 @@ def get_revisions(host: str, pid: str) -> list:
     revisions = r.text.split("\n")
     return revisions
 
+
 help_dryrun = "Perform dry run only, do not remove any data package"
-help_doi = "Set DOI target to tombstone (default is False)"
 help_sudo = (
     "SUDO password for tier (if SUDO environment variable "
     "is not set) "
@@ -65,9 +71,8 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 @click.option("--pid", default=None, multiple=True, help=help_pid)
 @click.option("--file", default=None, help=help_file)
 @click.option("--dryrun", default=False, is_flag=True, help=help_dryrun)
-@click.option("--doi", default=False, is_flag=True, help=help_doi)
 @click.option("--sudo", default=None, envvar="SUDO", help=help_sudo)
-def main(tier: str, pid: tuple, file: str, dryrun: bool, doi: bool, sudo: str):
+def main(tier: str, pid: tuple, file: str, dryrun: bool, sudo: str):
     """
         Prunes (/pro͞on/) data package(s) from PASTA repository.
 
@@ -75,20 +80,22 @@ def main(tier: str, pid: tuple, file: str, dryrun: bool, doi: bool, sudo: str):
         TIER: PASTA system tier targeted for package pruning.
     """
 
-    if not doi and tier in Config.PRODUCTION:
-        msg = (
-            "Removing pid(s) from the Production system but not tombstoning DOI(s), "
-            "are you sure you would like to continue (yes/no)?: "
-        )
-        confirm = input(msg)
-        if confirm.lower() == "no":
-            return 1
+    if dryrun:
+        msg = "*************************** DRYRUN ***************************"
+        logger.info(msg)
+        print(msg)
+
+    if tier not in Config.PRODUCTION + Config.STAGING + Config.DEVELOPMENT:
+        msg = f"Invalid tier: {tier}"
+        logger.error(msg)
+        print(msg)
+        return 1
 
     if sudo is None:
         sudo = input("Enter SUDO password for host: ")
 
     if pid is None and file is None:
-        msg = f"Usage: prune [OPTIONS] HOST\nTry 'proon.py -h' for help."
+        msg = f"Usage: prune [OPTIONS] TIER\nTry 'proon.py -h' for help."
         print(msg)
         return 1
     else:
@@ -105,22 +112,29 @@ def main(tier: str, pid: tuple, file: str, dryrun: bool, doi: bool, sudo: str):
                 revisions = get_revisions(tier, pid)
                 for revision in revisions:
                     package = Package(tier, f"{pid}.{revision}", True, sudo, dryrun)
-                    logger.info(f"Pruning {pid}.{revision} from {tier}")
+                    msg = f"Pruning {pid}.{revision} from {tier}"
+                    logger.info(msg)
+                    print(msg)
                     package.prune()
-                    if doi:
-                        package.tombstone_doi()
-                    logger.info(f"Successfully pruned {pid}.{revision} from {tier}")
+                    msg = f"Successfully pruned {pid}.{revision} from {tier}"
+                    logger.info(msg)
+                    print(msg)
             elif len(pid.split(".")) == 3:  # Prune single revision
                 package = Package(tier, pid, False, sudo, dryrun)
-                logger.info(f"Pruning {pid} from {tier}")
+                msg = f"Pruning {pid} from {tier}"
+                logger.info(msg)
+                print(msg)
                 package.prune()
-                if doi:
-                    package.tombstone_doi()
-                logger.info(f"Successfully pruned {pid} from {tier}")
+                msg = f"Successfully pruned {pid} from {tier}"
+                logger.info(msg)
+                print(msg)
             else:
-                logger.error(f"Invalid pid: {pid}")
+                msg = f"Invalid pid: {pid}"
+                logger.error(msg)
+                print(msg)
         except Exception as e:
             logger.error(e)
+            print(e)
 
     return 0
 
