@@ -40,7 +40,4 @@ Prune will remove all database and file system artifacts of the data package. Th
 
 ![Figure 1](/.eraser/hmuPjHdhDCChbLI8okTs___fnGbXWbo0lO57yDHg7xqtdn0bvA3___---figure---VtCRo6_iMTx2htBQbPOGy---figure---iaVoOXEgtTFIi_A2oHaa_A.png "Figure 1")
 
-_****_
-
-
 <!--- Eraser file: https://app.eraser.io/workspace/hmuPjHdhDCChbLI8okTs --->
