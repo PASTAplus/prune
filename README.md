@@ -36,7 +36,7 @@ Prune accepts as input a fully qualified package identifier (`scope.identifier.r
 # What artifacts does Prune touch?
 Prune will remove all database and file system artifacts of the data package. The databases affected are the `datapackagemanager.resource_registry` , `datapackagemanager.access_matrix` ,  `datapackagemanager.reservation` , `datapackagemanager.prov_matrix` , and `datapackagemanager.journal_citation` . All physical files, including `Leve-0-EML.xml` , `Level-1-EML.xml` ,  `Level-1-DC.xml` , `quality_report.xml` , and data files are deleted from the file system. The search index for the data package is also removed from PASTA's "Solr" search engine. In addition, cache files or other components are removed from the following services: "cite", "seo", "ridare", and "dex." Data package metadata in DataCite will be modified to include a tombstone link and set the record to non-searchable.
 
-[Figure 1](/.eraser/hmuPjHdhDCChbLI8okTs___fnGbXWbo0lO57yDHg7xqtdn0bvA3___---figure---LrhQylZAoyJ5l6hhBF9F4---figure---iaVoOXEgtTFIi_A2oHaa_A.png "Figure 1")
+![Figure 1](/.eraser/hmuPjHdhDCChbLI8okTs___fnGbXWbo0lO57yDHg7xqtdn0bvA3___---figure---LrhQylZAoyJ5l6hhBF9F4---figure---iaVoOXEgtTFIi_A2oHaa_A.png "Figure 1")
 
 
 
