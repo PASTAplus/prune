@@ -281,28 +281,34 @@ def _purge_dex(tier: str, pid: str, dryrun: bool):
     logger.info(msg)
     print(msg)
 
-    scope, identifier, revision = pid.split(".")
     if tier in Config.PRODUCTION:
-        url = f"https://dex.lternet.edu/https://pasta.lternet.edu/{scope}/{identifier}/{revision}"
+        host = "pasta.lternet.edu"
     elif tier in Config.STAGING:
-        url = f"https://dex-d.lternet.edu/https://pasta-s.lternet.edu/{scope}/{identifier}/{revision}"
+        host = "pasta-s.lternet.edu"
     else:
-        url = f"https://dex-d.lternet.edu/https://pasta-d.lternet.edu/{scope}/{identifier}/{revision}"
+        host = "pasta-d.lternet.edu"
 
-    msg = f"  {url}"
-    logger.info(msg)
-    print(msg)
+    scope, identifier, revision = pid.split(".")
+    url_tail = f"/https://{host}/package/data/eml/{scope}/{identifier}/{revision}"
+    dex = "https://dex.edirepository.org"
+    dex_d = "https://dex-d.edirepository.org"
 
-    if not dryrun:
-        r = requests.delete(url=url)
-        if r.status_code == requests.codes.not_found:
-            msg = f"  Purging DEX failed: {url} not found"
-            logger.info(msg)
-            print(msg)
-        elif r.status_code != requests.codes.ok:
-            msg = f"  Purging DEX failed: {url} {r.reason}"
-            logger.error(msg)
-            print(msg)
+    for url in [dex + url_tail, dex_d + url_tail]:
+
+        msg = f"  DELETE: {url}"
+        logger.info(msg)
+        print(msg)
+
+        if not dryrun:
+            r = requests.delete(url=url)
+            if r.status_code == requests.codes.not_found:
+                msg = f"  Purging DEX failed: {url} not found"
+                logger.info(msg)
+                print(msg)
+            elif r.status_code != requests.codes.ok:
+                msg = f"  Purging DEX failed: {url} {r.reason}"
+                logger.error(msg)
+                print(msg)
 
 
 def _tombstone_doi(tier: str, doi: str, pid: str, dryrun: bool):
@@ -392,6 +398,7 @@ class Package:
             _purge_journal_citation(self._db_conn, self._pid, self._dryrun)
             _purge_solr(self._tier, self._pid, self._dryrun)
             _purge_cite(self._tier, self._pid, self._dryrun, self._sudo)
+            _purge_dex(self._tier, self._pid, self._dryrun)
             _purge_seo(self._tier, self._pid, self._dryrun, self._sudo)
             _purge_ridare(self._tier, self._pid, self._dryrun, self._sudo)
             if self._doi is not None:
