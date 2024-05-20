@@ -290,8 +290,8 @@ def _purge_dex(tier: str, pid: str, dryrun: bool):
 
     scope, identifier, revision = pid.split(".")
     url_tail = f"/https://{host}/package/data/eml/{scope}/{identifier}/{revision}"
-    dex = "https://dex.edirepository.org"
-    dex_d = "https://dex-d.edirepository.org"
+    dex = "https://dex.edirepository.org/dex/api/package"
+    dex_d = "https://dex-d.edirepository.org/dex/api/package"
 
     for url in [dex + url_tail, dex_d + url_tail]:
 
