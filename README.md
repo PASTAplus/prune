@@ -1,5 +1,3 @@
-<p><a target="_blank" href="https://app.eraser.io/workspace/hmuPjHdhDCChbLI8okTs" id="edit-in-eraser-github-link"><img alt="Edit in Eraser" src="https://firebasestorage.googleapis.com/v0/b/second-petal-295822.appspot.com/o/images%2Fgithub%2FOpen%20in%20Eraser.svg?alt=media&amp;token=968381c8-a7e7-472a-8ed6-4a6626da5501"></a></p>
-
 # prune
 Selectively prune (/pro͞on/) data packages from PASTA
 
@@ -38,6 +36,4 @@ _**Be very careful when using Prune because any changes performed cannot be reve
 ## What artifacts does Prune touch?
 Prune will remove all database and file system artifacts of the data package. The databases affected are the `datapackagemanager.resource_registry` , `datapackagemanager.access_matrix` ,  `datapackagemanager.reservation` , `datapackagemanager.prov_matrix` , and `datapackagemanager.journal_citation` . All physical files, including `Leve-0-EML.xml` , `Level-1-EML.xml` ,  `Level-1-DC.xml` , `quality_report.xml` , and data files are deleted from the file system. The search index for the data package is also removed from PASTA's "Solr" search engine. In addition, cache files or other components are removed from the following services: "cite", "seo", "ridare", and "dex." Data package metadata in DataCite will be modified to include a tombstone link and set the record to non-searchable.
 
-![Figure 1](/.eraser/hmuPjHdhDCChbLI8okTs___fnGbXWbo0lO57yDHg7xqtdn0bvA3___---figure---VtCRo6_iMTx2htBQbPOGy---figure---iaVoOXEgtTFIi_A2oHaa_A.png "Figure 1")
-
-<!--- Eraser file: https://app.eraser.io/workspace/hmuPjHdhDCChbLI8okTs --->
+<img src="./docs/prune.png" alt="prune" style="width:400px;"/>
