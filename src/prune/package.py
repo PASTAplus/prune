@@ -276,7 +276,7 @@ def _purge_solr(tier: str, pid: str, dryrun: bool):
             print(r.reason)
 
 
-def _purge_dex(tier: str, pid: str, dryrun: bool):
+def _purge_dex(tier: str, pid: str, dryrun: bool) -> int:
     msg = f"Purging DEX:"
     logger.info(msg)
     print(msg)
@@ -289,9 +289,10 @@ def _purge_dex(tier: str, pid: str, dryrun: bool):
         host = "pasta-d.lternet.edu"
 
     scope, identifier, revision = pid.split(".")
-    url_tail = f"/https://{host}/package/data/eml/{scope}/{identifier}/{revision}"
+    url_tail = urllib.parse.quote_plus(f"/https://{host}/package/data/eml/{scope}/{identifier}/{revision}")
     dex = "https://dex.edirepository.org/dex/api/package"
     dex_d = "https://dex-d.edirepository.org/dex/api/package"
+    code = 0
 
     for url in [dex + url_tail, dex_d + url_tail]:
 
@@ -306,9 +307,11 @@ def _purge_dex(tier: str, pid: str, dryrun: bool):
                 logger.info(msg)
                 print(msg)
             elif r.status_code != requests.codes.ok:
+                code = 1
                 msg = f"  Purging DEX failed: {url} {r.reason}"
                 logger.error(msg)
                 print(msg)
+    return code
 
 
 def _tombstone_doi(tier: str, doi: str, pid: str, dryrun: bool):
