@@ -15,7 +15,6 @@
 """
 import logging
 import os
-import sys
 
 import click
 import daiquiri
@@ -69,7 +68,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.argument("tier", required=True)
 @click.option("--pid", default=None, multiple=True, help=help_pid)
-@click.option("--file", default=None, help=help_file)
+@click.option("--file", type=str, default=None, help=help_file)
 @click.option("--dryrun", default=False, is_flag=True, help=help_dryrun)
 @click.option("--sudo", default=None, envvar="SUDO", help=help_sudo)
 def main(tier: str, pid: tuple, file: str, dryrun: bool, sudo: str):
