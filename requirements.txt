@@ -20,11 +20,12 @@ iniconfig==2.0.0
 invoke==2.2.0
 packaging==25.0
 paramiko==3.5.1
+pastaplus.prune==2024.1.1
 pip==25.1.1
 pluggy==1.6.0
 psycopg2==2.9.10
 pycparser==2.22
-Pygments==2.19.1
+Pygments==2.19.2
 PyNaCl==1.5.0
 PySocks==1.7.1
 pytest==8.4.1
@@ -35,7 +36,7 @@ six==1.17.0
 SQLAlchemy==1.4.46
 tomli==2.2.1
 typing_extensions==4.14.0
-urllib3==2.4.0
+urllib3==2.5.0
 wheel==0.45.1
 wrapt==1.17.2
 zstandard==0.23.0
